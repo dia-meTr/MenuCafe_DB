@@ -1,0 +1,40 @@
+
+DROP FUNCTION IF EXISTS vacation_days;
+DELIMITER $$
+CREATE FUNCTION vacation_days(days INT)
+RETURNS FLOAT
+READS SQL DATA
+DETERMINISTIC
+BEGIN
+    IF days > 24 OR days < 1 THEN 
+		RETURN FALSE;
+	ELSE 
+		RETURN TRUE;
+	END IF;
+		
+END$$
+
+
+DROP FUNCTION IF EXISTS days24
+DELIMITER |
+CREATE TRIGGER days24
+BEFORE INSERT ON Vacation
+FOR EACH ROW BEGIN
+	IF NOT vacation_days(New.DaysNum) THEN
+		SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = "Too much or too less days";
+	END IF;
+ END;
+ 
+ 
+DROP FUNCTION IF EXISTS premium_count
+DELIMITER |
+CREATE TRIGGER premium_count
+BEFORE INSERT ON positio
+FOR EACH ROW BEGIN
+	DECLARE salary FLOAT;
+    SET salary = New.Salary;
+    SET New.Premium = salary * 0.1;
+ END;
+ 
+ 
